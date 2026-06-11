@@ -136,7 +136,7 @@ app.get("/terms", (req, res) => {
 // SEED ENDPOINT - Load sample data
 app.get("/seed", async (req, res) => {
     try {
-        const initData = require("./init/data.js");
+        const { data: sampleListings } = require("./init/data.js");
         const Listing = require("./models/listing.js");
         const Review = require("./models/review.js");
         const Booking = require("./models/booking.js");
@@ -157,7 +157,7 @@ app.get("/seed", async (req, res) => {
         }
 
         // Add listings with owner
-        const listingsWithOwner = initData.sampleListings.map((listing) => ({
+        const listingsWithOwner = sampleListings.map((listing) => ({
             ...listing,
             owner: demoUser._id,
         }));
