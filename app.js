@@ -133,6 +133,21 @@ app.get("/terms", (req, res) => {
     res.render("legal.ejs", {title: "Terms of Service"});
 });
 
+// TEST ENDPOINT - Check Database Connection
+app.get("/test-db", async (req, res) => {
+    try {
+        const Listing = require("./models/listing.js");
+        const count = await Listing.countDocuments();
+        res.send(`
+            <h2>✅ Database Connection Working!</h2>
+            <p>✅ Total Listings: <b>${count}</b></p>
+            ${count === 0 ? '<p><a href="/seed">Load sample data →</a></p>' : '<p><a href="/listings">View listings →</a></p>'}
+        `);
+    } catch (error) {
+        res.send(`<h2>❌ Database Error</h2><p>${error.message}</p>`);
+    }
+});
+
 // SEED ENDPOINT - Load sample data
 app.get("/seed", async (req, res) => {
     try {
@@ -142,10 +157,13 @@ app.get("/seed", async (req, res) => {
         const Booking = require("./models/booking.js");
         const User = require("./models/user.js");
 
+        console.log("🌱 Starting database seed...");
+        
         // Clear existing data
         await Listing.deleteMany({});
         await Review.deleteMany({});
         await Booking.deleteMany({});
+        console.log("🗑️  Cleared existing data");
 
         // Create demo user
         let demoUser = await User.findOne({ username: "demo" });
@@ -154,6 +172,7 @@ app.get("/seed", async (req, res) => {
                 new User({ username: "demo", email: "demo@wanderlust.com" }),
                 "demo1234"
             );
+            console.log("👤 Created demo user");
         }
 
         // Add listings with owner
@@ -162,16 +181,24 @@ app.get("/seed", async (req, res) => {
             owner: demoUser._id,
         }));
 
-        await Listing.insertMany(listingsWithOwner);
+        const savedListings = await Listing.insertMany(listingsWithOwner);
+        console.log(`✅ Inserted ${savedListings.length} listings`);
 
         res.send(`
             <h2>✅ Database Seeded Successfully!</h2>
-            <p>✅ Created demo user: demo / demo1234</p>
-            <p>✅ Added ${listingsWithOwner.length} sample listings</p>
-            <p><a href="/listings">View all listings →</a></p>
+            <p>✅ Created demo user: <b>demo / demo1234</b></p>
+            <p>✅ Added <b>${savedListings.length}</b> sample listings</p>
+            <hr>
+            <p><a href="/listings" style="color: #0066cc; text-decoration: underline;">View all listings →</a></p>
+            <p><a href="/test-db" style="color: #0066cc; text-decoration: underline;">Check database status →</a></p>
         `);
     } catch (error) {
-        res.send(`<h2>❌ Error: ${error.message}</h2>`);
+        console.error("❌ Seed Error:", error.message);
+        res.send(`
+            <h2>❌ Error During Seeding</h2>
+            <p><b>Error:</b> ${error.message}</p>
+            <p><a href="/test-db">Test database connection →</a></p>
+        `);
     }
 });
 
