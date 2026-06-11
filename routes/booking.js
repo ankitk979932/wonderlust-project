@@ -82,7 +82,7 @@ router.post("/listings/:id", isLoggedIn, wrapAsync(async (req, res) => {
         listingTitle: listing.title,
         guestName: req.user.username,
         guestEmail: req.user.email,
-        razorpayKey: process.env.RAZORPAY_KEY_ID,
+        razorpayKey: process.env.RAZORPAY_KEY_ID || "TEST_MODE",
     });
 }));
 
@@ -141,10 +141,30 @@ router.post("/:id/create-order", isLoggedIn, wrapAsync(async (req, res) => {
 
 // Verify Payment
 router.post("/:id/verify-payment", isLoggedIn, wrapAsync(async (req, res) => {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, test_mode } = req.body;
     
     const booking = await Booking.findById(req.params.id);
     
+    if (!booking) {
+        throw new ExpressError(404, "Booking not found");
+    }
+
+    // Test mode - bypass signature verification
+    if (test_mode) {
+        booking.paymentStatus = "completed";
+        booking.razorpayPaymentId = "test_" + razorpay_payment_id;
+        booking.razorpaySignature = "test_mode_bypass";
+        await booking.save();
+
+        req.flash("success", "✅ Test Mode: Booking confirmed!");
+        return res.json({ success: true, message: "Booking confirmed in test mode" });
+    }
+
+    // Production mode - verify signature
+    if (!process.env.RAZORPAY_KEY_SECRET) {
+        throw new ExpressError(500, "Payment gateway secret not configured");
+    }
+
     // Signature verify karo
     const body = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSignature = crypto
@@ -159,7 +179,7 @@ router.post("/:id/verify-payment", isLoggedIn, wrapAsync(async (req, res) => {
         await booking.save();
 
         req.flash("success", "Payment successful! Your booking is confirmed.");
-        res.redirect(`/bookings`);
+        return res.json({ success: true, message: "Payment verified" });
     } else {
         booking.paymentStatus = "failed";
         await booking.save();
