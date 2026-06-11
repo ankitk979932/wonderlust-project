@@ -1,0 +1,37 @@
+<% layout("/layouts/boilerplate") %>
+
+<section class="listing-hero">
+  <div>
+    <p class="eyebrow">Saved for later</p>
+    <h1>My wishlist</h1>
+    <p><%= listings.length %> saved stay<%= listings.length === 1 ? "" : "s" %>.</p>
+  </div>
+</section>
+
+<% if(listings.length === 0) { %>
+  <div class="empty-state">
+    <i class="fa-regular fa-heart"></i>
+    <h3>Your wishlist is empty</h3>
+    <p>Save stays you love and find them here.</p>
+  </div>
+<% } %>
+
+<div class="listing-grid">
+  <% for(const listing of listings) { %>
+    <article class="listing-card">
+      <a href="/listings/<%= listing._id %>" class="listing-link">
+        <div class="listing-image-wrap">
+          <img src="<%= listing.image %>" class="listing-image" alt="<%= listing.title %>">
+        </div>
+        <div class="listing-card-body">
+          <h3><%= listing.title %></h3>
+          <p><%= listing.location %>, <%= listing.country %></p>
+          <p class="price"><b>&#8377;<%= listing.price.toLocaleString("en-IN") %></b> night</p>
+        </div>
+      </a>
+      <form method="POST" action="/wishlist/<%= listing._id %>">
+        <button class="btn danger-btn btn-sm">Remove</button>
+      </form>
+    </article>
+  <% } %>
+</div>

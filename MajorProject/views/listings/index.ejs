@@ -1,0 +1,43 @@
+<% layout("/layouts/boilerplate") %>
+
+<section class="listing-hero">
+  <div>
+    <p class="eyebrow">Stay somewhere unforgettable</p>
+    <h1><%= query ? `Results for "${query}"` : "Explore stays" %></h1>
+    <p><%= allListings.length %> beautiful place<%= allListings.length === 1 ? "" : "s" %> ready for your next trip.</p>
+  </div>
+  <a class="btn primary-btn" href="/listings/new"><i class="fa-solid fa-plus"></i> List your place</a>
+</section>
+
+<% if(allListings.length === 0) { %>
+  <div class="empty-state">
+    <i class="fa-regular fa-compass"></i>
+    <h3>No stays found</h3>
+    <p>Try another destination or add the first listing.</p>
+  </div>
+<% } %>
+
+<div class="listing-grid">
+  <% for(const listing of allListings) { %>
+    <article class="listing-card">
+      <a href="/listings/<%= listing._id %>" class="listing-link">
+        <div class="listing-image-wrap">
+          <img src="<%= listing.image %>" class="listing-image" alt="<%= listing.title %>">
+          <span class="guest-favourite">Guest favourite</span>
+        </div>
+        <div class="listing-card-body">
+          <h3><%= listing.title %></h3>
+          <p><%= listing.location %>, <%= listing.country %></p>
+          <p class="price"><b>&#8377;<%= listing.price.toLocaleString("en-IN") %></b> night</p>
+        </div>
+      </a>
+      <% if(currentUser) { %>
+        <form class="wishlist-form" method="POST" action="/wishlist/<%= listing._id %>">
+          <button aria-label="Toggle wishlist">
+            <i class="<%= currentUser.wishlist.some(id => id.equals(listing._id)) ? 'fa-solid' : 'fa-regular' %> fa-heart"></i>
+          </button>
+        </form>
+      <% } %>
+    </article>
+  <% } %>
+</div>

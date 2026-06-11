@@ -1,0 +1,40 @@
+<% layout("/layouts/boilerplate") %>
+
+<section class="listing-hero">
+  <div>
+    <p class="eyebrow">Your travel plans</p>
+    <h1>My trips</h1>
+    <p>All your upcoming Wanderlust stays in one place.</p>
+  </div>
+  <a class="btn secondary-btn" href="/listings">Explore more stays</a>
+</section>
+
+<% if(bookings.length === 0) { %>
+  <div class="empty-state">
+    <i class="fa-solid fa-suitcase-rolling"></i>
+    <h3>No trips booked yet</h3>
+    <p>Time to find your next favourite place.</p>
+  </div>
+<% } %>
+
+<div class="trip-grid">
+  <% for(const booking of bookings) { %>
+    <% if(booking.listing) { %>
+      <article class="trip-card">
+        <img src="<%= booking.listing.image %>" alt="<%= booking.listing.title %>">
+        <div>
+          <p class="eyebrow"><%= booking.listing.location %></p>
+          <h3><%= booking.listing.title %></h3>
+          <p><b><%= booking.checkIn.toLocaleDateString("en-IN") %></b> to <b><%= booking.checkOut.toLocaleDateString("en-IN") %></b></p>
+          <p><%= booking.guests %> guest<%= booking.guests === 1 ? "" : "s" %> | &#8377;<%= booking.totalPrice.toLocaleString("en-IN") %> total</p>
+          <div class="owner-actions">
+            <a class="btn secondary-btn" href="/listings/<%= booking.listing._id %>">View stay</a>
+            <form method="POST" action="/bookings/<%= booking._id %>?_method=DELETE">
+              <button class="btn danger-btn">Cancel</button>
+            </form>
+          </div>
+        </div>
+      </article>
+    <% } %>
+  <% } %>
+</div>

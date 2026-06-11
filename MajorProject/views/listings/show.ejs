@@ -1,0 +1,92 @@
+<% layout("/layouts/boilerplate") %>
+<div class="show-page">
+  <div class="show-heading">
+    <div>
+      <h1><%= listing.title %></h1>
+      <p><i class="fa-solid fa-location-dot"></i> <%= listing.location %>, <%= listing.country %></p>
+    </div>
+    <div class="owner-actions">
+      <% if(currentUser) { %>
+        <form method="POST" action="/wishlist/<%= listing._id %>">
+          <button class="btn secondary-btn"><i class="<%= currentUser.wishlist.some(id => id.equals(listing._id)) ? 'fa-solid' : 'fa-regular' %> fa-heart"></i> Save</button>
+        </form>
+      <% } %>
+      <% if(currentUser && listing.owner && (currentUser.isAdmin || listing.owner._id.equals(currentUser._id))) { %>
+        <a href="/listings/<%= listing._id %>/edit" class="btn secondary-btn">Edit</a>
+        <form method="POST" action="/listings/<%=listing._id%>?_method=DELETE">
+          <button class="btn danger-btn">Delete</button>
+        </form>
+      <% } %>
+    </div>
+  </div>
+
+  <img src="<%= listing.image%>" class="show-image" alt="<%= listing.title %>">
+
+  <div class="show-content">
+    <section>
+      <h2>Hosted by <%= listing.owner ? listing.owner.username : "Wanderlust host" %></h2>
+      <p class="muted">A memorable stay in <%= listing.location %></p>
+      <hr>
+      <p class="description"><%= listing.description %></p>
+      <div class="feature-list">
+        <span><i class="fa-solid fa-wifi"></i> Fast wifi</span>
+        <span><i class="fa-solid fa-kitchen-set"></i> Kitchen</span>
+        <span><i class="fa-solid fa-car"></i> Free parking</span>
+      </div>
+    </section>
+    <aside class="booking-card">
+      <p><b>&#8377;<%= listing.price.toLocaleString("en-IN") %></b> night</p>
+      <% if(currentUser) { %>
+        <form action="/bookings/listings/<%= listing._id %>" method="POST" class="needs-validation" novalidate>
+          <div class="booking-fields">
+            <label>CHECK-IN<input type="date" name="checkIn" required></label>
+            <label>CHECKOUT<input type="date" name="checkOut" required></label>
+          </div>
+          <label class="form-label" for="guests">Guests</label>
+          <input class="form-control mb-3" id="guests" name="guests" type="number" min="1" max="10" value="1" required>
+          <button class="btn primary-btn w-100">Reserve</button>
+        </form>
+        <small>You won't be charged yet</small>
+      <% } else { %>
+        <a class="btn primary-btn w-100" href="/login">Log in to reserve</a>
+      <% } %>
+    </aside>
+  </div>
+
+  <div class="reviews-section">
+    <hr>
+    <% if(currentUser) { %>
+      <h3>Leave a review</h3>
+      <form class="mb-3 mt-3 needs-validation" action="/listings/<%= listing._id %>/reviews" method="POST" novalidate>
+        <div class="mb-3 mt-3">
+          <label for="rating" class="form-label">Rating</label>
+          <input type="range" min="1" max="5" id="rating" name="review[rating]" class="form-range">
+        </div>
+        <div class="mb-3 mt-3">
+          <label for="comment" class="form-label">Comment</label>
+          <textarea name="review[comment]" id="comment" cols="30" rows="5" class="form-control" required></textarea>
+          <div class="invalid-feedback">Please add some comments for review</div>
+        </div>
+        <button class="btn secondary-btn">Submit review</button>
+      </form>
+    <% } else { %>
+      <p><a href="/login">Log in</a> to leave a review.</p>
+    <% } %>
+    <hr>
+    <h3><i class="fa-solid fa-star"></i> Guest reviews</h3>
+    <div class="review-grid">
+      <% for(const review of listing.reviews) { %>
+        <article class="review-card">
+          <h5><i class="fa-solid fa-circle-user"></i> <%= review.author ? review.author.username : "Guest" %></h5>
+          <p class="rating"><%= review.rating %>/5 <i class="fa-solid fa-star"></i></p>
+          <p><%= review.comment %></p>
+          <% if(currentUser && review.author && (currentUser.isAdmin || review.author._id.equals(currentUser._id))) { %>
+            <form class="mb-3" method="POST" action="/listings/<%=listing._id%>/reviews/<%=review._id%>?_method=DELETE">
+              <button class="btn btn-sm danger-btn">Delete</button>
+            </form>
+          <% } %>
+        </article>
+      <% } %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,21 @@
+<%layout("/layouts/boilerplate") %>
+
+<div class="auth-shell">
+    <p class="eyebrow">Welcome back</p>
+    <h1>Log in</h1>
+    <p class="muted">Demo account: <b>demo</b> / <b>demo1234</b></p>
+        <form action="/login" method="POST" class="needs-validation" novalidate>
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input name="username" id="username" type="text"  class="form-control" required>
+                
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input name="password" id="password" type="password"  class="form-control" required>
+            
+            </div>
+            <button class="btn primary-btn w-100">Log in</button>
+        </form>
+</div>

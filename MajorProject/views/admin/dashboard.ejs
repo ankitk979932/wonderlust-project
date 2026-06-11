@@ -1,0 +1,34 @@
+<% layout("/layouts/boilerplate") %>
+
+<section class="listing-hero">
+  <div>
+    <p class="eyebrow">Administration</p>
+    <h1>Dashboard</h1>
+    <p>Platform activity at a glance.</p>
+  </div>
+</section>
+
+<div class="stat-grid">
+  <article><span>Users</span><b><%= stats.users %></b></article>
+  <article><span>Listings</span><b><%= stats.listings %></b></article>
+  <article><span>Reviews</span><b><%= stats.reviews %></b></article>
+  <article><span>Bookings</span><b><%= stats.bookings %></b></article>
+  <article><span>Booked value</span><b>&#8377;<%= stats.revenue.toLocaleString("en-IN") %></b></article>
+</div>
+
+<h2 class="mt-5">Recent bookings</h2>
+<div class="table-responsive">
+  <table class="table align-middle">
+    <thead><tr><th>Guest</th><th>Listing</th><th>Dates</th><th>Total</th></tr></thead>
+    <tbody>
+      <% for(const booking of recentBookings) { %>
+        <tr>
+          <td><%= booking.guest ? booking.guest.username : "Deleted user" %></td>
+          <td><%= booking.listing ? booking.listing.title : "Deleted listing" %></td>
+          <td><%= booking.checkIn.toLocaleDateString("en-IN") %> - <%= booking.checkOut.toLocaleDateString("en-IN") %></td>
+          <td>&#8377;<%= booking.totalPrice.toLocaleString("en-IN") %></td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>

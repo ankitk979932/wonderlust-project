@@ -1,0 +1,72 @@
+<% layout("layouts/boilerplate") %>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3>Payment</h3>
+                </div>
+                <div class="card-body">
+                    <p><strong>Listing:</strong> <%= typeof listingTitle !== 'undefined' ? listingTitle : 'N/A' %></p>
+                    <p><strong>Total Amount:</strong> ₹<%= totalPrice %></p>
+                    <p><strong>Check-in:</strong> <%= new Date(checkIn).toLocaleDateString() %></p>
+                    <p><strong>Check-out:</strong> <%= new Date(checkOut).toLocaleDateString() %></p>
+                    <p><strong>Guests:</strong> <%= guests %></p>
+                    
+                    <button id="payButton" class="btn btn-success btn-lg w-100 mt-3">
+                        Pay ₹<%= totalPrice %>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+    document.getElementById("payButton").addEventListener("click", async function() {
+        try {
+            const response = await fetch(`/bookings/<%= bookingId %>/create-order`, {
+                method: "POST"
+            });
+            
+            if (!response.ok) {
+                alert("Failed to create payment order");
+                return;
+            }
+            
+            const order = await response.json();
+            
+            const options = {
+                key: "<%= razorpayKey %>",
+                amount: order.amount,
+                currency: "INR",
+                order_id: order.id,
+                name: "Wanderlust",
+                handler: function(response) {
+                    fetch(`/bookings/<%= bookingId %>/verify-payment`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature
+                        })
+                    }).then(() => {
+                        window.location.href = "/bookings";
+                    });
+                }
+            };
+            
+            const rzp = new Razorpay(options);
+            rzp.open();
+        } catch(err) {
+            console.error(err);
+            alert("Error: " + err.message);
+        }
+    });
+</script>
