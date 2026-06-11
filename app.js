@@ -133,6 +133,48 @@ app.get("/terms", (req, res) => {
     res.render("legal.ejs", {title: "Terms of Service"});
 });
 
+// SEED ENDPOINT - Load sample data
+app.get("/seed", async (req, res) => {
+    try {
+        const initData = require("./init/data.js");
+        const Listing = require("./models/listing.js");
+        const Review = require("./models/review.js");
+        const Booking = require("./models/booking.js");
+        const User = require("./models/user.js");
+
+        // Clear existing data
+        await Listing.deleteMany({});
+        await Review.deleteMany({});
+        await Booking.deleteMany({});
+
+        // Create demo user
+        let demoUser = await User.findOne({ username: "demo" });
+        if (!demoUser) {
+            demoUser = await User.register(
+                new User({ username: "demo", email: "demo@wanderlust.com" }),
+                "demo1234"
+            );
+        }
+
+        // Add listings with owner
+        const listingsWithOwner = initData.sampleListings.map((listing) => ({
+            ...listing,
+            owner: demoUser._id,
+        }));
+
+        await Listing.insertMany(listingsWithOwner);
+
+        res.send(`
+            <h2>✅ Database Seeded Successfully!</h2>
+            <p>✅ Created demo user: demo / demo1234</p>
+            <p>✅ Added ${listingsWithOwner.length} sample listings</p>
+            <p><a href="/listings">View all listings →</a></p>
+        `);
+    } catch (error) {
+        res.send(`<h2>❌ Error: ${error.message}</h2>`);
+    }
+});
+
 // app.get("/testListing", async(req, res) =>{
 //     let sampleListing = new Listing({
 //         title: "My New Villa",
