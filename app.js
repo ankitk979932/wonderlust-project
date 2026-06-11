@@ -148,6 +148,32 @@ app.get("/test-db", async (req, res) => {
     }
 });
 
+// PAYMENT DIAGNOSTIC
+app.get("/test-payment", (req, res) => {
+    const razorpayKeyId = process.env.RAZORPAY_KEY_ID ? "✅ Set" : "❌ Missing";
+    const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET ? "✅ Set" : "❌ Missing";
+    const mongoUrl = process.env.MONGO_URL ? "✅ Set" : "❌ Missing";
+    const sessionSecret = process.env.SESSION_SECRET ? "✅ Set" : "❌ Missing";
+    
+    res.send(`
+        <h2>🔧 Environment Variables Status</h2>
+        <table border="1" cellpadding="10" style="margin-top: 20px;">
+            <tr><td><b>Variable</b></td><td><b>Status</b></td></tr>
+            <tr><td>RAZORPAY_KEY_ID</td><td>${razorpayKeyId}</td></tr>
+            <tr><td>RAZORPAY_KEY_SECRET</td><td>${razorpayKeySecret}</td></tr>
+            <tr><td>MONGO_URL</td><td>${mongoUrl}</td></tr>
+            <tr><td>SESSION_SECRET</td><td>${sessionSecret}</td></tr>
+        </table>
+        <hr>
+        <h3>📝 Notes:</h3>
+        <ul>
+            <li>✅ If all green: System configured correctly</li>
+            <li>❌ If red: Update Render environment variables</li>
+            <li>💡 Payment uses test keys - real payments require production keys</li>
+        </ul>
+    `);
+});
+
 // SEED ENDPOINT - Load sample data
 app.get("/seed", async (req, res) => {
     try {

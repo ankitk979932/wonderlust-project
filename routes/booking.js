@@ -100,6 +100,14 @@ router.delete("/:bookingId", isLoggedIn, wrapAsync(async (req, res) => {
 
 // Create Razorpay Order
 router.post("/:id/create-order", isLoggedIn, wrapAsync(async (req, res) => {
+    // Payment disabled in test mode
+    if (!process.env.RAZORPAY_KEY_ID) {
+        return res.json({
+            success: false,
+            message: "Payment gateway not configured. Contact admin."
+        });
+    }
+    
     if (!razorpay) {
         throw new ExpressError(500, "Payment gateway not configured");
     }
